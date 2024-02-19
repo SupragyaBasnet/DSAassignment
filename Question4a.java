@@ -12,83 +12,198 @@
 // Output: 8
 // The goal is to Collect all key 
 
-import java.util.*;
+// import java.util.*;
 
-class Maze {
-    static final int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Define directions: Up, Down, Left, Right
+// class Maze {
+//     static final int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Define directions: Up, Down, Left, Right
 
-    // Method to find the shortest path to collect all keys in the maze
-    public static int shortestPathAllKeys(String[] grid) {
+//     // Method to find the shortest path to collect all keys in the maze
+//     public static int shortestPathAllKeys(String[] grid) {
+//         int m = grid.length; // Number of rows in the grid
+//         int n = grid[0].length(); // Number of columns in the grid
+//         Queue<Node> queue = new LinkedList<>(); // Queue for BFS traversal
+//         Set<String> visited = new HashSet<>(); // Set to store visited states
+//         int startX = 0, startY = 0, totalKeys = 0; // Initialize starting position and total number of keys
+
+//         // Scan the grid to find the starting point and total number of keys
+//         for (int i = 0; i < m; i++) {
+//             for (int j = 0; j < n; j++) {
+//                 char cell = grid[i].charAt(j); // Get the character at position (i, j)
+//                 if (cell == 'S') { // If starting point is found
+//                     startX = i; // Set starting x-coordinate
+//                     startY = j; // Set starting y-coordinate
+//                 } else if (cell >= 'a' && cell <= 'f') { // If the cell contains a key
+//                     totalKeys |= (1 << (cell - 'a')); // Mark the key as needed to be collected
+//                 }
+//             }
+//         }
+
+//         // Initialize BFS traversal with starting state
+//         queue.offer(new Node(startX, startY, 0, 0)); // Add starting point to the queue
+//         visited.add(startX + "," + startY + ",0"); // Mark starting state as visited
+
+//         // BFS traversal of the maze
+//         while (!queue.isEmpty()) {
+//             Node current = queue.poll(); // Dequeue the current state
+//             if (current.keys == totalKeys) return current.steps; // If all keys are collected, return the number of steps
+
+//             // Explore all possible directions from the current position
+//             for (int[] dir : directions) {
+//                 int newX = current.x + dir[0], newY = current.y + dir[1]; // Calculate new position
+//                 int newKeys = current.keys; // Initialize new set of keys
+
+//                 // Check if the new position is within the grid boundaries
+//                 if (newX >= 0 && newX < m && newY >= 0 && newY < n) {
+//                     char nextCell = grid[newX].charAt(newY); // Get the character at the new position
+
+//                     // Check if the next cell is a wall or a locked door without a key
+//                     if (nextCell == 'W') continue; // If it's a wall, skip to the next direction
+//                     if (nextCell >= 'A' && nextCell <= 'F' && (newKeys & (1 << (nextCell - 'A'))) == 0) continue; // If it's a locked door without a key, skip to the next direction
+
+//                     // Check if the next cell contains a key
+//                     if (nextCell >= 'a' && nextCell <= 'f') newKeys |= (1 << (nextCell - 'a')); // Collect the key
+
+//                     String newState = newX + "," + newY + "," + newKeys; // Create a string to represent the new state
+//                     if (!visited.contains(newState)) { // If the new state is not visited
+//                         visited.add(newState); // Mark the new state as visited
+//                         queue.offer(new Node(newX, newY, current.steps + 1, newKeys)); // Enqueue the new state with updated information
+//                     }
+//                 }
+//             }
+//         }
+
+//         return -1; // If it's not possible to collect all keys
+//     }
+
+//     // Define a class to represent a state in the maze
+//     static class Node {
+//         int x, y, steps, keys; // Position (x, y), number of steps taken, and keys collected
+
+//         Node(int x, int y, int steps, int keys) { // Constructor to initialize a state
+//             this.x = x; // Initialize x-coordinate
+//             this.y = y; // Initialize y-coordinate
+//             this.steps = steps; // Initialize number of steps
+//             this.keys = keys; // Initialize keys collected
+//         }
+//     }
+
+//     public static void main(String[] args) {
+//         String[] grid = {"SPaPP", "WWWPW", "bPAPB"}; // Define the maze grid
+//         System.out.println("Minimum steps: " + shortestPathAllKeys(grid)); // Print the minimum steps to collect all keys
+//     }
+
+// }
+
+
+import java.util.*; // Importing necessary Java utilities
+
+// Class representing a point in the grid
+class Point {
+    int x, y, keys; // Point's coordinates (x, y) and keys collected
+
+    // Constructor to initialize a Point object
+    public Point(int x, int y, int keys) {
+        this.x = x;
+        this.y = y;
+        this.keys = keys;
+    }
+}
+
+// Main class containing the method to find minimum steps to collect all keys
+public class Question4a {
+    
+    // Method to calculate the minimum steps required to collect all keys
+    public int minStepsToCollectAllKeys(char[][] grid) {
         int m = grid.length; // Number of rows in the grid
-        int n = grid[0].length(); // Number of columns in the grid
-        Queue<Node> queue = new LinkedList<>(); // Queue for BFS traversal
-        Set<String> visited = new HashSet<>(); // Set to store visited states
-        int startX = 0, startY = 0, totalKeys = 0; // Initialize starting position and total number of keys
-
-        // Scan the grid to find the starting point and total number of keys
+        int n = grid[0].length; // Number of columns in the grid
+        int allKeys = 0; // Bitmask to track collected keys
+        int startX = -1, startY = -1; // Starting position
+        
+        // Loop through the grid to find starting position and collect all keys
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                char cell = grid[i].charAt(j); // Get the character at position (i, j)
-                if (cell == 'S') { // If starting point is found
-                    startX = i; // Set starting x-coordinate
-                    startY = j; // Set starting y-coordinate
-                } else if (cell >= 'a' && cell <= 'f') { // If the cell contains a key
-                    totalKeys |= (1 << (cell - 'a')); // Mark the key as needed to be collected
+                char cell = grid[i][j]; // Current cell in the grid
+                
+                // If 'S' is found, set starting position
+                if (cell == 'S') {
+                    startX = i;
+                    startY = j;
+                } 
+                // If a key is found, update the bitmask
+                else if (cell >= 'a' && cell <= 'f') {
+                    allKeys |= (1 << (cell - 'a')); // Set the bit for the key
                 }
             }
         }
+        
+        // Queue to perform breadth-first search
+        Queue<Point> queue = new LinkedList<>();
+        queue.offer(new Point(startX, startY, 0)); // Add starting point to the queue
+        boolean[][][] visited = new boolean[m][n][64]; // 3D array to track visited cells with keys
 
-        // Initialize BFS traversal with starting state
-        queue.offer(new Node(startX, startY, 0, 0)); // Add starting point to the queue
-        visited.add(startX + "," + startY + ",0"); // Mark starting state as visited
-
-        // BFS traversal of the maze
+        int[][] dirs = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Directions: Up, Down, Left, Right
+        int steps = 0; // Variable to count steps
+        
+        // Breadth-first search loop
         while (!queue.isEmpty()) {
-            Node current = queue.poll(); // Dequeue the current state
-            if (current.keys == totalKeys) return current.steps; // If all keys are collected, return the number of steps
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                Point curr = queue.poll(); // Get the current point from the queue
+                int x = curr.x, y = curr.y, keys = curr.keys; // Current point's coordinates and keys
+                
+                // If all keys are collected, return the steps
+                if (keys == allKeys) {
+                    return steps;
+                }
+                
+                // Explore adjacent cells in all four directions
+                for (int[] dir : dirs) {
+                    int newX = x + dir[0];
+                    int newY = y + dir[1];
 
-            // Explore all possible directions from the current position
-            for (int[] dir : directions) {
-                int newX = current.x + dir[0], newY = current.y + dir[1]; // Calculate new position
-                int newKeys = current.keys; // Initialize new set of keys
+                    // Check if the new position is within bounds and not a wall
+                    if (newX >= 0 && newX < m && newY >= 0 && newY < n && grid[newX][newY] != '#') {
+                        char nextCell = grid[newX][newY]; // Next cell's value
+                        int newKeys = keys; // Initialize newKeys with the current keys
 
-                // Check if the new position is within the grid boundaries
-                if (newX >= 0 && newX < m && newY >= 0 && newY < n) {
-                    char nextCell = grid[newX].charAt(newY); // Get the character at the new position
+                        // If the next cell is a locked door, check if the key is available
+                        if (nextCell >= 'A' && nextCell <= 'F') {
+                            int door = nextCell - 'A'; // Get the index of the door
+                            if ((keys & (1 << door)) == 0) {
+                                continue; // Skip if the key is missing
+                            }
+                        } 
+                        // If the next cell has a key, collect it
+                        else if (nextCell >= 'a' && nextCell <= 'f') {
+                            newKeys |= (1 << (nextCell - 'a')); // Collect the key
+                        }
 
-                    // Check if the next cell is a wall or a locked door without a key
-                    if (nextCell == 'W') continue; // If it's a wall, skip to the next direction
-                    if (nextCell >= 'A' && nextCell <= 'F' && (newKeys & (1 << (nextCell - 'A'))) == 0) continue; // If it's a locked door without a key, skip to the next direction
-
-                    // Check if the next cell contains a key
-                    if (nextCell >= 'a' && nextCell <= 'f') newKeys |= (1 << (nextCell - 'a')); // Collect the key
-
-                    String newState = newX + "," + newY + "," + newKeys; // Create a string to represent the new state
-                    if (!visited.contains(newState)) { // If the new state is not visited
-                        visited.add(newState); // Mark the new state as visited
-                        queue.offer(new Node(newX, newY, current.steps + 1, newKeys)); // Enqueue the new state with updated information
+                        // If the new position with keys combination is not visited
+                        if (!visited[newX][newY][newKeys]) {
+                            visited[newX][newY][newKeys] = true; // Mark as visited
+                            queue.offer(new Point(newX, newY, newKeys)); // Add to queue for further exploration
+                        }
                     }
                 }
             }
+            steps++; // Increment steps after exploring all points at the current level
         }
 
-        return -1; // If it's not possible to collect all keys
+        return -1; // Cannot collect all keys
     }
 
-    // Define a class to represent a state in the maze
-    static class Node {
-        int x, y, steps, keys; // Position (x, y), number of steps taken, and keys collected
-
-        Node(int x, int y, int steps, int keys) { // Constructor to initialize a state
-            this.x = x; // Initialize x-coordinate
-            this.y = y; // Initialize y-coordinate
-            this.steps = steps; // Initialize number of steps
-            this.keys = keys; // Initialize keys collected
-        }
-    }
-
+    // Main method to test the implementation
     public static void main(String[] args) {
-        String[] grid = {"SPaPP", "WWWPW", "bPAPB"}; // Define the maze grid
-        System.out.println("Minimum steps: " + shortestPathAllKeys(grid)); // Print the minimum steps to collect all keys
+        // Sample grid representing the maze
+        char[][] grid = {
+            {'S', 'P', 'q', 'P', 'P'},
+            {'W', 'W', 'W', 'P', 'W'},
+            {'r', 'P', 'Q', 'P', 'R'}
+        };
+
+        // Create an instance of the Question4a class
+        Question4a solver = new Question4a();
+        // Find and print the minimum steps to collect all keys
+        System.out.println("Minimum steps to collect all keys: " + solver.minStepsToCollectAllKeys(grid));
     }
 }

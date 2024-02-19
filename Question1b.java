@@ -17,70 +17,29 @@
 // Therefore, the minimum time needed to build all the engines using optimal decisions on splitting engineers and assigning them to engines is 4 units.
 // Note: The splitting process occurs in parallel, and the goal is to minimize the total time required to build all the engines using the available engineers while considering the time cost of splitting.
 
-import java.util.PriorityQueue;
 public class Question1b {
+    public static void main(String[] args) {
+        int[] engines = {1, 2, 3}; // Array of engine repair times
+        int k = 1; // Maximum number of engineers that can work together
+        System.out.println(minimumTime(engines, k)); // Print the result of minimumTime method
+    }
 
-  public int timeToBuildEngine(int[] engines, int splitCost) {
+    // Method to calculate minimum time required to repair all engines
+    public static int minimumTime(int[] engines, int k) {
+        int maxTime = 0; // Variable to store the maximum time
+        int engineers = 1; // Variable to represent the number of engineers initially set to 1
 
-      PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+        // Loop through the engine repair times starting from the last engine
+        for (int i = engines.length - 1; i >= 0; i--) {
+            int time = engines[i]; // Get the repair time for the current engine
+            while (engineers < time) { // Continue until the number of engineers is less than the repair time
+                int splitTime = Math.min(time - engineers, k); // Calculate the split time based on available engineers and maximum number of engineers allowed
+                engineers += splitTime; // Increment the number of engineers by the split time
+                maxTime = Math.max(maxTime, time); // Update the maximum time if necessary
+            }
+            engineers--; // Decrease the number of engineers after finishing the repair of an engine
+        }
 
-      // priority queue is just like queue but it removes the value from lowest to
-      // highest, which is necessary for this to work
-      // forgot what its called
-      // using the for each loop to add engines to minHeap priority queue
-      for (int engine : engines) {
-          minHeap.add(engine);
-      }
-
-      // System.out.println(minHeap);
-      int totalTime = 0; // we need to allocate as 0 as base cuz at the start no engine is built
-
-      // according to question we have 4 engines being built so, we want to keep the
-      // loop running till we have 1 engine left to build
-
-      // so we use minHeap.size()>1
-
-      while (minHeap.size() > 1) {
-          int firstEngine = minHeap.poll();
-          int secondEngine = minHeap.poll();
-
-          int time = (minHeap.size() > 0) ? splitCost : 0; // time is usually going to be 2 unless there is no engines
-                                                           // left to build
-
-          // System.out.println(splitTime);
-
-          // step time is basically when engineers split into 2 engineers then 3 and then
-          // 4
-          // whats happening is first 2 engins take 2, and 3 hrs to build so we are taking
-          // maximum time it takes to complete the engines i.e. 5 then adding the 5 into
-          // heap
-          // then we have 4 and 5 engines and it becomes 7 hrs to complete
-          // and then we have 5,7 note that 7 is not an engine but rather we are splitting
-          // engineers to build the engine so it becomes 7 in overall since the last
-          // engine being completed makes time 0
-
-          int stepTime = Math.max(firstEngine, secondEngine) + time;
-          // System.out.println(stepTime);
-          // System.out.println("firstEngine: " + firstEngine);
-          // System.out.println("secondEngine: " + secondEngine);
-          // System.out.println("splitTime: " + splitTime);
-          // System.out.println("stepTime: " + stepTime);
-          totalTime += time;
-          // System.out.println(totalTime);
-          minHeap.add(stepTime);
-          // System.out.println(minHeap);
-      }
-
-      // totalTime += minHeap.poll();
-
-      return totalTime;
-  }
-
-  public static void main(String[] args) {
-      Question1b q = new Question1b();
-      int[] engines = { 3, 4, 5, 2 };
-      int splitCost = 2;
-      int result = q.timeToBuildEngine(engines, splitCost);
-      System.out.println(result);
-  }
+        return maxTime + 1; // Return the maximum time required to repair all engines
+    }
 }
