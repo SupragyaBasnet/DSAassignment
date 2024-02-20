@@ -33,8 +33,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// Class definition extending JFrame to create a Swing frame
 class ExtendedSwingFrame extends JFrame {
 
+    // Swing components declaration
     private JTextField textField;
     private JButton addUrlButton;
     private JButton downloadButton;
@@ -42,19 +44,26 @@ class ExtendedSwingFrame extends JFrame {
     private JButton cancelButton;
     private JPanel progressBarPanel;
 
+    // Executor service for managing threads
     private ExecutorService executorService;
+    // List to store URLs
     private List<String> urlList;
+    // List to store progress bars
     private List<JProgressBar> progressBars;
+    // List to store download workers
     private List<DownloadWorker> workers;
 
+    // Atomic boolean to manage cancellation state
     private AtomicBoolean isCanceled;
 
+    // Constructor
     public ExtendedSwingFrame() {
         setTitle("Extended Swing Frame");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
 
+        // Initializing Swing components
         textField = new JTextField(20);
         addUrlButton = new JButton("Add URL");
         downloadButton = new JButton("Download Images");
@@ -62,12 +71,13 @@ class ExtendedSwingFrame extends JFrame {
         cancelButton = new JButton("Cancel All Downloads");
         progressBarPanel = new JPanel(new GridLayout(0, 1));
 
+        // Initializing lists and flags
         urlList = new ArrayList<>();
         progressBars = new ArrayList<>();
         workers = new ArrayList<>();
-
         isCanceled = new AtomicBoolean(false);
 
+        // Adding action listeners to buttons
         addUrlButton.addActionListener(e -> {
             String imageUrl = textField.getText();
             if (!imageUrl.isEmpty()) {
@@ -102,6 +112,7 @@ class ExtendedSwingFrame extends JFrame {
             cancelAllDownloads();
         });
 
+        // Adding components to the panel
         panel.add(new JLabel("Image URL:"));
         panel.add(textField);
         panel.add(addUrlButton);
@@ -110,14 +121,17 @@ class ExtendedSwingFrame extends JFrame {
         panel.add(cancelButton);
         panel.add(progressBarPanel);
 
+        // Adding panel to the frame
         getContentPane().add(panel);
 
         setSize(400, 300);
         setVisible(true);
 
+        // Initializing the executor service
         executorService = Executors.newFixedThreadPool(10);
     }
 
+    // Method to add a progress bar to the panel
     private void addProgressBar(int imageNumber) {
         JLabel label = new JLabel("Image " + imageNumber + ": ");
         JProgressBar progressBar = new JProgressBar(0, 100);
@@ -154,6 +168,7 @@ class ExtendedSwingFrame extends JFrame {
         downloadImage(urlList.get(imageNumber - 1), progressBar, imageNumber);
     }
 
+    // Method to cancel all downloads
     private void cancelAllDownloads() {
         if (workers != null && !workers.isEmpty()) {
             for (DownloadWorker worker : workers) {
@@ -162,6 +177,7 @@ class ExtendedSwingFrame extends JFrame {
         }
     }
 
+    // Method to find the index of a worker by its progress bar
     private int findWorkerIndexByProgressBar(JProgressBar progressBar) {
         for (int i = 0; i < progressBars.size(); i++) {
             if (progressBars.get(i) == progressBar) {
@@ -171,12 +187,14 @@ class ExtendedSwingFrame extends JFrame {
         return -1;
     }
 
+    // Method to initiate image download
     private void downloadImage(String imageUrl, JProgressBar progressBar, int imageNumber) {
         DownloadWorker worker = new DownloadWorker(imageUrl, progressBar, imageNumber);
         executorService.execute(worker);
         workers.add(worker);
     }
 
+    // Nested class for handling image download in a background thread
     private class DownloadWorker extends SwingWorker<Void, Integer> {
 
         private final String imageUrl;
@@ -200,6 +218,7 @@ class ExtendedSwingFrame extends JFrame {
             }
         }
 
+        // Background task for downloading image
         @Override
         protected Void doInBackground() {
             try {
@@ -289,6 +308,7 @@ class ExtendedSwingFrame extends JFrame {
             return null;
         }
 
+        // Method to update progress
         @Override
         protected void process(List<Integer> chunks) {
             for (int progress : chunks) {
@@ -296,6 +316,7 @@ class ExtendedSwingFrame extends JFrame {
             }
         }
 
+        // Method to handle completion of the task
         @Override
         protected void done() {
             boolean allDone = true;
@@ -314,6 +335,7 @@ class ExtendedSwingFrame extends JFrame {
         }
     }
 
+    // Method to check if a URL is valid
     private boolean isValidUrl(String urlString) {
         try {
             new URL(urlString).toURI();
@@ -323,6 +345,7 @@ class ExtendedSwingFrame extends JFrame {
         }
     }
 
+    // Method to generate a dynamic file name to prevent overwriting existing files
     private String getDynamicFileName(String directory, String fileName) {
         String baseName = fileName.substring(0, Math.min(fileName.lastIndexOf('.'), 255));
         String extension = fileName.substring(fileName.lastIndexOf('.'));
@@ -337,6 +360,7 @@ class ExtendedSwingFrame extends JFrame {
         return filePath.getFileName().toString();
     }
 
+    // Method to show error messages in a dialog
     private void showError(String message, String imageUrl) {
         SwingUtilities.invokeLater(() -> {
             JOptionPane.showMessageDialog(this,
@@ -345,10 +369,12 @@ class ExtendedSwingFrame extends JFrame {
         });
     }
 
+    // Main method to start the application
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ExtendedSwingFrame());
     }
 }
+
 // https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm0zMDktYWV3LTAxM18xXzEuanBn.jpg
 // https://png.pngtree.com/thumb_back/fh260/background/20230421/pngtree-abstract-blue-background-free-download-wallpaper-hd-vector-image_2479232.jpg
 // https://st5.depositphotos.com/35914836/63547/i/450/depositphotos_635479512-stock-photo-brown-wooden-wall-texture-background.jpg
